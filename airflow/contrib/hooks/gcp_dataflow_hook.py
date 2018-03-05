@@ -104,14 +104,10 @@ class _Dataflow(LoggingMixin):
             self.log.info("About to readlines from {}".format(fd))
             line = self._proc.stderr.readline()
             # lines = self._proc.stderr.readlines()
-            # self.log.info("Read lines")
             # for line in lines:
             #     self.log.warning(line[:-1])
-            # self.log.info("Extracting last line")
             # line = lines[-1][:-1]
-            # self.log.info("Returning last line")
             return line
-        self.log.info("Opening stdout")
         if fd == self._proc.stdout.fileno():
             self.log.info("About to readline")
             line = self._proc.stdout.readline()
@@ -129,11 +125,10 @@ class _Dataflow(LoggingMixin):
         while self._proc.poll() is None:
             self.log.info("Just polled DataFlow process to complete.")
             ret = select.select(reads, [], [], 5)
-            self.log.info("Got select")
             if ret is not None:
-                self.log.info("Got some return lines")
                 for fd in ret[0]:
                     line = self._line(fd)
+                    self.log.info(line[:-1])
                     self.log.debug(line[:-1])
                 self.log.info("Printed return lines")
             else:
