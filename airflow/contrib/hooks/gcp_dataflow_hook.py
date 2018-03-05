@@ -103,9 +103,12 @@ class _Dataflow(LoggingMixin):
         if fd == self._proc.stderr.fileno():
             self.log.info("About to readlines")
             lines = self._proc.stderr.readlines()
+            self.log.info("Read lines")
             for line in lines:
                 self.log.warning(line[:-1])
+            self.log.info("Extracting last line")
             line = lines[-1][:-1]
+            self.log.info("Returning last line")
             return line
         self.log.info("Opening stdout")
         if fd == self._proc.stdout.fileno():
