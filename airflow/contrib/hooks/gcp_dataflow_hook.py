@@ -99,13 +99,17 @@ class _Dataflow(LoggingMixin):
             close_fds=True)
 
     def _line(self, fd):
+        self.log.info("Opening stderr")
         if fd == self._proc.stderr.fileno():
+            self.log.info("About to readlines")
             lines = self._proc.stderr.readlines()
             for line in lines:
-              self.log.warning(line[:-1])
+                self.log.warning(line[:-1])
             line = lines[-1][:-1]
             return line
+        self.log.info("Opening stdout")
         if fd == self._proc.stdout.fileno():
+            self.log.info("About to readline")
             line = self._proc.stdout.readline()
             return line
 
@@ -127,6 +131,7 @@ class _Dataflow(LoggingMixin):
                 for fd in ret[0]:
                     line = self._line(fd)
                     self.log.debug(line[:-1])
+                self.log.info("Printed return lines")
             else:
                 self.log.info("Waiting for DataFlow process to complete.")
         self.log.info("No longer waiting for DataFlow process to complete.")
