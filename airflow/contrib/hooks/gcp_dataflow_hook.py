@@ -119,13 +119,17 @@ class _Dataflow(LoggingMixin):
         reads = [self._proc.stderr.fileno(), self._proc.stdout.fileno()]
         self.log.info("Start waiting for DataFlow process to complete.")
         while self._proc.poll() is None:
+            self.log.info("Just polled DataFlow process to complete.")
             ret = select.select(reads, [], [], 5)
+            self.log.info("Got select")
             if ret is not None:
+                self.log.info("Got some return lines")
                 for fd in ret[0]:
                     line = self._line(fd)
                     self.log.debug(line[:-1])
             else:
                 self.log.info("Waiting for DataFlow process to complete.")
+        self.log.info("No longer waiting for DataFlow process to complete.")
         if self._proc.returncode is not 0:
             raise Exception("DataFlow failed with return code {}".format(
                 self._proc.returncode))
