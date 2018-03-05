@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import select
-import subprocess
+import subprocess32 as subprocess
 import time
 import uuid
 
@@ -101,7 +101,7 @@ class _Dataflow(LoggingMixin):
     def _line(self, fd):
         self.log.info("Opening stderr")
         if fd == self._proc.stderr.fileno():
-            self.log.info("About to readlines")
+            self.log.info("About to readlines from {}".format(fd))
             lines = self._proc.stderr.readlines()
             self.log.info("Read lines")
             for line in lines:
