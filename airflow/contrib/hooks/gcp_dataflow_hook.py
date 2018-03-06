@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import select
-import subprocess32 as subprocess
+import subprocess
 import time
 import uuid
 
