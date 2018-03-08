@@ -21,8 +21,11 @@ import logging
 import sys
 import warnings
 
+import six
+
 from builtins import object
 from contextlib import contextmanager
+from logging import Handler, StreamHandler
 
 
 class LoggingMixin(object):
@@ -30,8 +33,7 @@ class LoggingMixin(object):
     Convenience super-class to have a logger configured with the class name
     """
     def __init__(self, context=None):
-        if context is not None:
-            set_context(self.log, context)
+        self._set_context(context)
 
     # We want to deprecate the logger property in Airflow 2.0
     # The log property is the de facto standard in most programming languages
@@ -55,6 +57,10 @@ class LoggingMixin(object):
                 self.__class__.__module__ + '.' + self.__class__.__name__
             )
             return self._log
+
+    def _set_context(self, context):
+        if context is not None:
+            set_context(self.log, context)
 
 
 class StreamLogWriter(object):
@@ -98,6 +104,32 @@ class StreamLogWriter(object):
         For compatibility reasons.
         """
         return False
+
+
+class RedirectStdHandler(StreamHandler):
+    """
+    This class is like a StreamHandler using sys.stderr/stdout, but always uses
+    whatever sys.stderr/stderr is currently set to rather than the value of
+    sys.stderr/stdout at handler construction time.
+    """
+    def __init__(self, stream):
+        if not isinstance(stream, six.string_types):
+            raise Exception("Cannot use file like objects. Use 'stdout' or 'stderr'"
+                            " as a str and without 'ext://'.")
+
+        self._use_stderr = True
+        if 'stdout' in stream:
+            self._use_stderr = False
+
+        # StreamHandler tries to set self.stream
+        Handler.__init__(self)
+
+    @property
+    def stream(self):
+        if self._use_stderr:
+            return sys.stderr
+
+        return sys.stdout
 
 
 @contextmanager
