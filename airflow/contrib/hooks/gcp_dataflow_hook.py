@@ -128,7 +128,6 @@ class _Dataflow(LoggingMixin):
                     self.log.debug(line[:-1])
             else:
                 self.log.info("Waiting for DataFlow process to complete.")
-        self.log.info("No longer waiting for DataFlow process to complete.")
         if self._proc.returncode is not 0:
             raise Exception("DataFlow failed with return code {}".format(
                 self._proc.returncode))
