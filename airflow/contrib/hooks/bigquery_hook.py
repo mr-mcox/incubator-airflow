@@ -146,6 +146,13 @@ class BigQueryPandasConnector(GbqConnector):
         self.service = service
         self.verbose = verbose
         self.dialect = dialect
+        # Version of pandas is looking for an http error - hopefully this gives it what is expected
+        try:
+            from googleapiclient.errors import HttpError
+        except:
+            from apiclient.errors import HttpError
+        self.http_error = HttpError
+
 
 
 class BigQueryConnection(object):
