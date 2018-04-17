@@ -22,6 +22,7 @@ from airflow import configuration
 from airflow.exceptions import AirflowException
 from airflow.utils.log.logging_mixin import LoggingMixin
 from airflow.utils.log.file_task_handler import FileTaskHandler
+import traceback
 
 
 class GCSTaskHandler(FileTaskHandler, LoggingMixin):
@@ -56,6 +57,8 @@ class GCSTaskHandler(FileTaskHandler, LoggingMixin):
                 '"{}". {}\n\nPlease make sure that airflow[gcp_api] is installed '
                 'and the GCS connection exists.'.format(remote_conn_id, str(e))
             )
+            self.log.error(e.args)
+            traceback.print_exc()
 
     @property
     def hook(self):
