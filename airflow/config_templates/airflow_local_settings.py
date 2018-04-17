@@ -22,6 +22,11 @@ from airflow import configuration as conf
 # settings.py and cli.py. Please see AIRFLOW-1455.
 LOG_LEVEL = conf.get('core', 'LOGGING_LEVEL').upper()
 
+
+# Flask appbuilder's info level log is very verbose,
+# so it's set to 'WARN' by default.
+FAB_LOG_LEVEL = 'WARN'
+
 LOG_FORMAT = conf.get('core', 'LOG_FORMAT')
 
 BASE_LOG_FOLDER = conf.get('core', 'BASE_LOG_FOLDER')
@@ -36,7 +41,7 @@ PROCESSOR_FILENAME_TEMPLATE = '{{ filename }}.log'
 # s3 buckets should start with "s3://"
 # gcs buckets should start with "gs://"
 # wasb buckets should start with "wasb" just to help Airflow select correct handler
-REMOTE_BASE_LOG_FOLDER = ''
+REMOTE_BASE_LOG_FOLDER = conf.get('core', 'REMOTE_BASE_LOG_FOLDER')
 
 DEFAULT_LOGGING_CONFIG = {
     'version': 1,
@@ -76,6 +81,11 @@ DEFAULT_LOGGING_CONFIG = {
             'level': LOG_LEVEL,
             'propagate': False,
         },
+        'flask_appbuilder': {
+            'handler': ['console'],
+            'level': FAB_LOG_LEVEL,
+            'propagate': True,
+        }
     },
     'root': {
         'handlers': ['console'],

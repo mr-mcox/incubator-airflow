@@ -2303,9 +2303,10 @@ class VariableView(wwwutils.DataProfilingMixin, AirflowModelView):
     def hidden_field_formatter(view, context, model, name):
         if wwwutils.should_hide_value_for_key(model.key):
             return Markup('*' * 8)
-        try:
-            return getattr(model, name)
-        except AirflowException:
+        val = getattr(model, name)
+        if val:
+            return val
+        else:
             return Markup('<span class="label label-danger">Invalid</span>')
 
     form_columns = (
@@ -2672,7 +2673,6 @@ class ConnectionModelView(wwwutils.SuperUserMixin, AirflowModelView):
         'extra__google_cloud_platform__key_path': StringField('Keyfile Path'),
         'extra__google_cloud_platform__keyfile_dict': PasswordField('Keyfile JSON'),
         'extra__google_cloud_platform__scope': StringField('Scopes (comma separated)'),
-
     }
     form_choices = {
         'conn_type': models.Connection._types

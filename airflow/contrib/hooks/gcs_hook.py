@@ -27,7 +27,7 @@ class GoogleCloudStorageHook(GoogleCloudBaseHook):
     """
 
     def __init__(self,
-                 google_cloud_storage_conn_id='google_cloud_storage_default',
+                 google_cloud_storage_conn_id='google_cloud_default',
                  delegate_to=None):
         super(GoogleCloudStorageHook, self).__init__(google_cloud_storage_conn_id,
                                                      delegate_to)
@@ -457,5 +457,6 @@ def _parse_gcs_url(gsurl):
         raise AirflowException('Please provide a bucket name')
     else:
         bucket = parsed_url.netloc
-        blob = parsed_url.path.strip('/')
+        # Remove leading '/' but NOT trailing one
+        blob = parsed_url.path.lstrip('/')
         return bucket, blob

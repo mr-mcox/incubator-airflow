@@ -166,7 +166,8 @@ cloudant = ['cloudant>=0.5.9,<2.0'] # major update coming soon, clamp to 0.x
 redis = ['redis>=2.10.5']
 kubernetes = ['kubernetes>=3.0.0',
               'cryptography>=2.0.0']
-
+snowflake = ['snowflake-connector-python>=1.5.2',
+             'snowflake-sqlalchemy>=1.1.0']
 zendesk = ['zdesk']
 
 all_dbs = postgres + mysql + hive + mssql + hdfs + vertica + cloudant + druid
@@ -191,7 +192,8 @@ devel_minreq = devel + kubernetes + mysql + doc + password + s3 + cgroups
 devel_hadoop = devel_minreq + hive + hdfs + webhdfs + kerberos
 devel_all = (sendgrid + devel + all_dbs + doc + samba + s3 + slack + crypto + oracle +
              docker + ssh + kubernetes + celery + azure + redis + gcp_api + datadog +
-             zendesk + jdbc + ldap + kerberos + password + webhdfs + jenkins + druid)
+             zendesk + jdbc + ldap + kerberos + password + webhdfs + jenkins +
+             druid + snowflake)
 
 # Snakebite & Google Cloud Dataflow are not Python 3 compatible :'(
 if PY3:
@@ -219,7 +221,8 @@ def do_setup():
             'configparser>=3.5.0, <3.6.0',
             'croniter>=0.3.17, <0.4',
             'dill>=0.2.2, <0.3',
-            'flask>=0.11, <0.12',
+            'flask>=0.12, <0.13',
+            'flask-appbuilder>=1.9.6, <2.0.0',
             'flask-admin==1.4.1',
             'flask-caching>=1.3.3, <1.4.0',
             'flask-login==0.2.11',
@@ -234,12 +237,12 @@ def do_setup():
             'lxml>=3.6.0, <4.0',
             'markdown>=2.5.2, <3.0',
             'pandas>=0.17.1, <1.0.0',
-            'pendulum==1.4.0',
+            'pendulum==1.4.4',
             'psutil>=4.2.0, <5.0.0',
             'pygments>=2.0.1, <3.0',
             'python-daemon>=2.1.1, <2.2',
             'python-dateutil>=2.3, <3',
-            'python-nvd3==0.14.2',
+            'python-nvd3==0.15.0',
             'requests>=2.5.1, <3',
             'setproctitle>=1.1.8, <2',
             'sqlalchemy>=1.1.15, <1.2.0',
@@ -297,7 +300,8 @@ def do_setup():
             'webhdfs': webhdfs,
             'jira': jira,
             'redis': redis,
-            'kubernetes': kubernetes
+            'kubernetes': kubernetes,
+            'snowflake': snowflake
         },
         classifiers=[
             'Development Status :: 5 - Production/Stable',
