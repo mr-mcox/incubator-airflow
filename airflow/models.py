@@ -3789,6 +3789,7 @@ class DAG(BaseDag, LoggingMixin):
 
     @provide_session
     def pickle(self, session=None):
+        self.log.debug('Pickle ran')
         dag = session.query(
             DagModel).filter(DagModel.dag_id == self.dag_id).first()
         dp = None
@@ -3796,10 +3797,12 @@ class DAG(BaseDag, LoggingMixin):
             dp = session.query(DagPickle).filter(
                 DagPickle.id == dag.pickle_id).first()
         if not dp or dp.pickle != self:
+            self.log.debug('Pickling!')
             dp = DagPickle(dag=self)
             session.add(dp)
             self.last_pickled = timezone.utcnow()
             session.commit()
+
             self.pickle_id = dp.id
 
         return dp
