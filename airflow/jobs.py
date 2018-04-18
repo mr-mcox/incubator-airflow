@@ -1785,7 +1785,9 @@ class SchedulerJob(BaseJob):
         for dag_id in dagbag.dags:
             dag = dagbag.get_dag(dag_id)
             pickle_id = None
+            self.log.debug('BA-1037: Processing DAG {}'.format(dag_id))
             if pickle_dags:
+                self.log.debug('Pickling DAG')
                 pickle_id = dag.pickle(session).id
 
             # Only return DAGs that are not paused
