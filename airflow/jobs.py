@@ -2437,6 +2437,10 @@ class BackfillJob(BaseJob):
             session.add(pickle)
             session.commit()
             pickle_id = pickle.id
+            self.log.debug('Pickled {} id {} with do not pickle of {} and class {}'.format(pickle.dag_id,
+                                                                                           pickle_id,
+                                                                                     self.donot_pickle,
+                                                                                   self.executor.__class__))
 
         executor = self.executor
         executor.start()
