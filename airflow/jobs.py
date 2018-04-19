@@ -390,6 +390,7 @@ class DagFileProcessor(AbstractDagFileProcessor, LoggingMixin):
         """
         Launch the process and start processing the DAG.
         """
+        self.log.debug('Launching DagFileProcessor with pickle_dags %s', self._pickle_dags)
         self._process = DagFileProcessor._launch_process(
             self._result_queue,
             self.file_path,
@@ -1523,8 +1524,10 @@ class SchedulerJob(BaseJob):
 
         # DAGs can be pickled for easier remote execution by some executors
         pickle_dags = False
+        self.log.debug('Scheduler values are pickle: %s and class %s', self.do_pickle, self.executor.__class__)
         if self.do_pickle and self.executor.__class__ not in \
                 (executors.LocalExecutor, executors.SequentialExecutor):
+            self.log.debug('Pickle dags is True')
             pickle_dags = True
 
         # Use multiple processes to parse and generate tasks for the
