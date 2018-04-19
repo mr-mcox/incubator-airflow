@@ -1622,7 +1622,7 @@ class SchedulerJob(BaseJob):
         # For the execute duration, parse and schedule DAGs
         while (timezone.utcnow() - execute_start_time).total_seconds() < \
                 self.run_duration or self.run_duration < 0:
-            self.log.debug("Starting Loop...")
+            # self.log.debug("Starting Loop...")
             loop_start_time = time.time()
 
             # Traverse the DAG directory for Python files containing DAGs
@@ -1641,9 +1641,17 @@ class SchedulerJob(BaseJob):
                 self.log.debug("Removing old import errors")
                 self.clear_nonexistent_import_errors(known_file_paths=known_file_paths)
 
-            # Kick of new processes and collect results from finished ones
-            self.log.debug("Heartbeating the process manager")
-            simple_dags = processor_manager.heartbeat()
+                # Kick of new processes and collect results from finished ones
+                self.log.debug("Heartbeating the process manager")
+                simple_dags = processor_manager.heartbeat()
+
+                # Call heartbeats
+                self.log.debug("Heartbeating the executor")
+                self.executor.heartbeat()
+
+                # Process events from the executor
+                self._process_executor_events(simple_dag_bag)
+
 
             if self.using_sqlite:
                 # For the sqlite case w/ 1 thread, wait until the processor
@@ -1676,13 +1684,6 @@ class SchedulerJob(BaseJob):
                 self._execute_task_instances(simple_dag_bag,
                                              (State.SCHEDULED,))
 
-            # Call heartbeats
-            self.log.debug("Heartbeating the executor")
-            self.executor.heartbeat()
-
-            # Process events from the executor
-            self._process_executor_events(simple_dag_bag)
-
             # Heartbeat the scheduler periodically
             time_since_last_heartbeat = (timezone.utcnow() -
                                          last_self_heartbeat_time).total_seconds()
@@ -1700,8 +1701,8 @@ class SchedulerJob(BaseJob):
                 last_stat_print_time = timezone.utcnow()
 
             loop_end_time = time.time()
-            self.log.debug("Ran scheduling loop in %.2f seconds",
-                           loop_end_time - loop_start_time)
+            # self.log.debug("Ran scheduling loop in %.2f seconds",
+            #                loop_end_time - loop_start_time)
 
             # Exit early for a test mode
             if processor_manager.max_runs_reached():
