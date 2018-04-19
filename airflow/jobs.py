@@ -359,8 +359,8 @@ class DagFileProcessor(AbstractDagFileProcessor, LoggingMixin):
                 threading.current_thread().name = thread_name
                 start_time = time.time()
 
-                log.info("Started process (PID=%s) to work on %s",
-                         os.getpid(), file_path)
+                log.info("Started process (PID=%s) to work on %s with pickle_dags %s",
+                         os.getpid(), file_path, pickle_dags)
                 scheduler_job = SchedulerJob(dag_ids=dag_id_white_list, log=log)
                 result = scheduler_job.process_file(file_path,
                                                     pickle_dags)
@@ -578,6 +578,7 @@ class SchedulerJob(BaseJob):
         if run_duration is None:
             self.run_duration = conf.getint('scheduler',
                                             'run_duration')
+        self.log.debug('SchedulerJob initiated')
 
     @provide_session
     def manage_slas(self, dag, session=None):
@@ -1756,6 +1757,7 @@ class SchedulerJob(BaseJob):
         :return: a list of SimpleDags made from the Dags found in the file
         :rtype: list[SimpleDag]
         """
+        print("processing_file running")
         self.log.info("Processing file %s for tasks to queue", file_path)
         # As DAGs are parsed from this file, they will be converted into SimpleDags
         simple_dags = []
