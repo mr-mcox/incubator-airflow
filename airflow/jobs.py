@@ -1651,6 +1651,30 @@ class SchedulerJob(BaseJob):
 
                 # Process events from the executor
                 self._process_executor_events(simple_dag_bag)
+                            # Send tasks for execution if available
+                simple_dag_bag = SimpleDagBag(simple_dags)
+                if len(simple_dags) > 0:
+
+                    # Handle cases where a DAG run state is set (perhaps manually) to
+                    # a non-running state. Handle task instances that belong to
+                    # DAG runs in those states
+
+                    # If a task instance is up for retry but the corresponding DAG run
+                    # isn't running, mark the task instance as FAILED so we don't try
+                    # to re-run it.
+                    self._change_state_for_tis_without_dagrun(simple_dag_bag,
+                                                              [State.UP_FOR_RETRY],
+                                                              State.FAILED)
+                    # If a task instance is scheduled or queued, but the corresponding
+                    # DAG run isn't running, set the state to NONE so we don't try to
+                    # re-run it.
+                    self._change_state_for_tis_without_dagrun(simple_dag_bag,
+                                                              [State.QUEUED,
+                                                               State.SCHEDULED],
+                                                              State.NONE)
+
+                    self._execute_task_instances(simple_dag_bag,
+                                                 (State.SCHEDULED,))
 
 
             if self.using_sqlite:
@@ -1659,30 +1683,7 @@ class SchedulerJob(BaseJob):
                 self.log.debug("Waiting for processors to finish since we're using sqlite")
                 processor_manager.wait_until_finished()
 
-            # Send tasks for execution if available
-            simple_dag_bag = SimpleDagBag(simple_dags)
-            if len(simple_dags) > 0:
 
-                # Handle cases where a DAG run state is set (perhaps manually) to
-                # a non-running state. Handle task instances that belong to
-                # DAG runs in those states
-
-                # If a task instance is up for retry but the corresponding DAG run
-                # isn't running, mark the task instance as FAILED so we don't try
-                # to re-run it.
-                self._change_state_for_tis_without_dagrun(simple_dag_bag,
-                                                          [State.UP_FOR_RETRY],
-                                                          State.FAILED)
-                # If a task instance is scheduled or queued, but the corresponding
-                # DAG run isn't running, set the state to NONE so we don't try to
-                # re-run it.
-                self._change_state_for_tis_without_dagrun(simple_dag_bag,
-                                                          [State.QUEUED,
-                                                           State.SCHEDULED],
-                                                          State.NONE)
-
-                self._execute_task_instances(simple_dag_bag,
-                                             (State.SCHEDULED,))
 
             # Heartbeat the scheduler periodically
             time_since_last_heartbeat = (timezone.utcnow() -
