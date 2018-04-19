@@ -1649,9 +1649,6 @@ class SchedulerJob(BaseJob):
                 self.log.debug("Heartbeating the executor")
                 self.executor.heartbeat()
 
-                # Process events from the executor
-                self._process_executor_events(simple_dag_bag)
-                            # Send tasks for execution if available
                 simple_dag_bag = SimpleDagBag(simple_dags)
                 if len(simple_dags) > 0:
 
@@ -1675,6 +1672,9 @@ class SchedulerJob(BaseJob):
 
                     self._execute_task_instances(simple_dag_bag,
                                                  (State.SCHEDULED,))
+                # Process events from the executor
+                self._process_executor_events(simple_dag_bag)
+                # Send tasks for execution if available
 
 
             if self.using_sqlite:
