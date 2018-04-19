@@ -35,6 +35,7 @@ class FileProcessorHandler(logging.Handler):
         :param filename_template: template filename string
         """
         super(FileProcessorHandler, self).__init__()
+        logging.debug('Setting up file processor handler')
         self.handler = None
         self.base_log_folder = base_log_folder
         self.dag_dir = os.path.expanduser(conf.get('core', 'DAGS_FOLDER'))
@@ -45,6 +46,7 @@ class FileProcessorHandler(logging.Handler):
             self.filename_jinja_template = Template(self.filename_template)
 
         self._cur_date = datetime.today()
+        logging.debug('Log dir is %s', self._get_log_directory())
         if not os.path.exists(self._get_log_directory()):
             try:
                 os.makedirs(self._get_log_directory())
@@ -63,6 +65,7 @@ class FileProcessorHandler(logging.Handler):
         :param filename: filename in which the dag is located
         """
         local_loc = self._init_file(filename)
+        logging.debug('Inited file %s', filename)
         self.handler = logging.FileHandler(local_loc)
         self.handler.setFormatter(self.formatter)
         self.handler.setLevel(self.level)

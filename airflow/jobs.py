@@ -340,8 +340,8 @@ class DagFileProcessor(AbstractDagFileProcessor, LoggingMixin):
             # This helper runs in the newly created process
             log = logging.getLogger("airflow.processor")
 
-            stdout = StreamLogWriter(log, logging.INFO)
-            stderr = StreamLogWriter(log, logging.WARN)
+            stdout = StreamLogWriter(log, logging.DEBUG)
+            stderr = StreamLogWriter(log, logging.DEBUG)
 
             set_context(log, file_path)
 
