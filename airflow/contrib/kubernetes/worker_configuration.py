@@ -18,6 +18,7 @@
 import copy
 import os
 import six
+import logging
 
 from airflow.contrib.kubernetes.pod import Pod, Resources
 from airflow.contrib.kubernetes.secret import Secret
@@ -181,7 +182,9 @@ class WorkerConfiguration(LoggingMixin):
             limit_memory=kube_executor_config.limit_memory,
             limit_cpu=kube_executor_config.limit_cpu
         )
+        logging.info('Executor config is {}'.format(kube_executor_config.as_dict()))
         gcp_sa_key = kube_executor_config.gcp_service_account_key
+        logging.info('SA key is {}'.format(gcp_sa_key))
         annotations = {
             'iam.cloud.google.com/service-account': gcp_sa_key
         } if gcp_sa_key else {}
