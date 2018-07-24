@@ -174,7 +174,7 @@ class WorkerConfiguration(LoggingMixin):
         ]
         for sv in secret_volumes:
             volume_mounts.append({'name': sv['volume_name'],
-                                  'mountPath': sv['secret_name']})
+                                  'mountPath': sv['mount_path']})
 
         # Mount the airflow.cfg file via a configmap the user has specified
         if self.kube_config.airflow_configmap:
