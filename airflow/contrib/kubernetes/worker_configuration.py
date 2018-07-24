@@ -102,11 +102,25 @@ class WorkerConfiguration(LoggingMixin):
             return []
         return self.kube_config.image_pull_secrets.split(',')
 
+    def _get_secret_volumes(self):
+        """Defines secret volumes for the pod executor"""
+        volumes = []
+        if not self.kube_config.secret_volumes:
+            return []
+        secret_mount_pairs = self.kube_config.secret_volumes.split(',')
+        for i, secret_mount_pair in enumerate(secret_mount_pairs):
+            secret_name, mount_path = secret_mount_pair.split('=')
+            volume_name = 'secret-volume-{}'.format(i)
+            volumes.append({'volume_name': volume_name,
+                            'secret_name': secret_name,
+                            'mount_path': mount_path})
+        return volumes
+
     def init_volumes_and_mounts(self):
         dags_volume_name = 'airflow-dags'
         logs_volume_name = 'airflow-logs'
 
-        def _construct_volume(name, claim, subpath=None, secret=None):
+        def _construct_volume(name, claim, subpath=None):
             vo = {
                 'name': name
             }
@@ -116,11 +130,13 @@ class WorkerConfiguration(LoggingMixin):
                 }
                 if subpath:
                     vo['subPath'] = subpath
-            elif secret:
-                vo['secret'] = {'secretName': secret}
             else:
                 vo['emptyDir'] = {}
             return vo
+
+        def _construct_secret_volume(name, secret):
+            return {'name': name, 'secret': {'secretName': secret}}
+
 
         volumes = [
             _construct_volume(
@@ -133,12 +149,10 @@ class WorkerConfiguration(LoggingMixin):
                 self.kube_config.logs_volume_claim,
                 self.kube_config.logs_volume_subpath
             ),
-            _construct_volume(
-                'gcp-secret',
-                claim=None,
-                secret='airflow-service-account',
-            ),
         ]
+        secret_volumes = self._get_secret_volumes()
+        for sv in secret_volumes:
+            volumes.append(_construct_secret_volume(sv['volume_name'], sv['secret_name']))
 
         dag_volume_mount_path = ""
         if self.kube_config.dags_volume_claim:
@@ -157,10 +171,10 @@ class WorkerConfiguration(LoggingMixin):
             'name': logs_volume_name,
             'mountPath': self.worker_airflow_logs
         },
-        {
-            'name': 'gcp-secret',
-            'mountPath': '/secrets/gcp'
-        },]
+        ]
+        for sv in secret_volumes:
+            volume_mounts.append({'name': sv['volume_name'],
+                                  'mountPath': sv['secret_name']})
 
         # Mount the airflow.cfg file via a configmap the user has specified
         if self.kube_config.airflow_configmap:
