@@ -118,7 +118,6 @@ class WorkerConfiguration(LoggingMixin):
                     vo['subPath'] = subpath
             elif secret:
                 vo['secret'] = {'secretName': secret}
-
             else:
                 vo['emptyDir'] = {}
             return vo
@@ -157,7 +156,11 @@ class WorkerConfiguration(LoggingMixin):
         }, {
             'name': logs_volume_name,
             'mountPath': self.worker_airflow_logs
-        }]
+        },
+        {
+            'name': 'gcp-secret',
+            'mountPath': '/secrets/gcp'
+        },]
 
         # Mount the airflow.cfg file via a configmap the user has specified
         if self.kube_config.airflow_configmap:
