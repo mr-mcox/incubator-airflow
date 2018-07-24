@@ -106,7 +106,7 @@ class WorkerConfiguration(LoggingMixin):
         dags_volume_name = 'airflow-dags'
         logs_volume_name = 'airflow-logs'
 
-        def _construct_volume(name, claim, subpath=None):
+        def _construct_volume(name, claim, subpath=None, secret=None):
             vo = {
                 'name': name
             }
@@ -116,6 +116,9 @@ class WorkerConfiguration(LoggingMixin):
                 }
                 if subpath:
                     vo['subPath'] = subpath
+            elif secret:
+                vo['secret'] = {'secretName': secret}
+
             else:
                 vo['emptyDir'] = {}
             return vo
@@ -130,7 +133,12 @@ class WorkerConfiguration(LoggingMixin):
                 logs_volume_name,
                 self.kube_config.logs_volume_claim,
                 self.kube_config.logs_volume_subpath
-            )
+            ),
+            _construct_volume(
+                'gcp-secret',
+                claim=None,
+                secret='airflow-service-account',
+            ),
         ]
 
         dag_volume_mount_path = ""
