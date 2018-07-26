@@ -180,9 +180,9 @@ class KubeConfig:
         # configmap
         self.airflow_configmap = conf.get(self.kubernetes_section, 'airflow_configmap')
 
-        self.baked_in_dags = False
+        self.dags_baked_in = False
         if not self.dags_volume_claim and (not self.git_repo or not self.git_branch):
-            self.baked_in_dags = True
+            self.dags_baked_in = True
 
 
 

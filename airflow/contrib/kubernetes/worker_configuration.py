@@ -37,7 +37,7 @@ class WorkerConfiguration(LoggingMixin):
     def _get_init_containers(self, volume_mounts):
         """When using git to retrieve the DAGs, use the GitSync Init Container"""
         # If we're using volume claims to mount the dags, no init container is needed
-        if self.kube_config.dags_volume_claim or self.kube_config.baked_in_dags:
+        if self.kube_config.dags_volume_claim or self.kube_config.dags_baked_in:
             return []
 
         # Otherwise, define a git-sync init container
@@ -80,9 +80,13 @@ class WorkerConfiguration(LoggingMixin):
     def _get_environment(self):
         """Defines any necessary environment variables for the pod executor"""
         env = {
-            'AIRFLOW__CORE__DAGS_FOLDER': '/tmp/dags',
             'AIRFLOW__CORE__EXECUTOR': 'LocalExecutor'
         }
+        if self.kube_config.dags_baked_in:
+            env['AIRFLOW__CORE__DAGS_FOLDER'] = self.kube_config.dags_folder
+        else:
+            env['AIRFLOW__CORE__DAGS_FOLDER'] = '/tmp/dags'
+
         if self.kube_config.airflow_configmap:
             env['AIRFLOW__CORE__AIRFLOW_HOME'] = self.worker_airflow_home
         return env
