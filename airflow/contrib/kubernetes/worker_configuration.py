@@ -141,23 +141,6 @@ class WorkerConfiguration(LoggingMixin):
         def _construct_secret_volume(name, secret):
             return {'name': name, 'secret': {'secretName': secret}}
 
-
-        volumes = [
-            _construct_volume(
-                dags_volume_name,
-                self.kube_config.dags_volume_claim,
-                self.kube_config.dags_volume_subpath
-            ),
-            _construct_volume(
-                logs_volume_name,
-                self.kube_config.logs_volume_claim,
-                self.kube_config.logs_volume_subpath
-            ),
-        ]
-        secret_volumes = self._get_secret_volumes()
-        for sv in secret_volumes:
-            volumes.append(_construct_secret_volume(sv['volume_name'], sv['secret_name']))
-
         dag_volume_mount_path = ""
         if self.kube_config.dags_volume_claim:
             dag_volume_mount_path = self.worker_airflow_dags
@@ -167,15 +150,42 @@ class WorkerConfiguration(LoggingMixin):
                 self.kube_config.git_subpath
             )
 
-        volume_mounts = [{
-            'name': dags_volume_name,
-            'mountPath': dag_volume_mount_path,
-            'readOnly': True
-        }, {
-            'name': logs_volume_name,
-            'mountPath': self.worker_airflow_logs
-        },
-        ]
+        volumes = list()
+        volume_mounts = list()
+
+        if self.kube_config.dags_volume_claim or not self.kube_config.dags_baked_in:
+           volumes.append(
+               _construct_volume(
+                   dags_volume_name,
+                   self.kube_config.dags_volume_claim,
+                   self.kube_config.dags_volume_subpath
+               )
+           )
+           volume_mounts.append({
+                'name': dags_volume_name,
+                'mountPath': dag_volume_mount_path,
+                'readOnly': True
+           })
+
+        if self.kube_config.logs_volume_claim:
+            volumes.append(
+                _construct_volume(
+                    logs_volume_name,
+                    self.kube_config.logs_volume_claim,
+                    self.kube_config.logs_volume_subpath
+                ),
+            )
+            volume_mounts.append(
+                {
+                    'name': logs_volume_name,
+                    'mountPath': self.worker_airflow_logs
+                }
+            )
+
+        secret_volumes = self._get_secret_volumes()
+        for sv in secret_volumes:
+            volumes.append(_construct_secret_volume(sv['volume_name'], sv['secret_name']))
+
         for sv in secret_volumes:
             volume_mounts.append({'name': sv['volume_name'],
                                   'mountPath': sv['mount_path']})
