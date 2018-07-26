@@ -180,13 +180,10 @@ class KubeConfig:
         # configmap
         self.airflow_configmap = conf.get(self.kubernetes_section, 'airflow_configmap')
 
-        self._validate()
-
-    def _validate(self):
+        self.baked_in_dags = False
         if not self.dags_volume_claim and (not self.git_repo or not self.git_branch):
-            raise AirflowConfigException(
-                'In kubernetes mode the following must be set in the `kubernetes` '
-                'config section: `dags_volume_claim` or `git_repo and git_branch`')
+            self.baked_in_dags = True
+
 
 
 class KubernetesJobWatcher(multiprocessing.Process, LoggingMixin, object):
