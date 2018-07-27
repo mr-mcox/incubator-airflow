@@ -224,6 +224,14 @@ class WorkerConfiguration(LoggingMixin):
         annotations = {
             'iam.cloud.google.com/service-account': gcp_sa_key
         } if gcp_sa_key else {}
+        labels = {
+                'airflow-worker': worker_uuid,
+                'dag_id': dag_id,
+                'task_id': task_id,
+                'execution_date': execution_date,
+                'function': 'worker'
+            }
+        labels.update(kube_executor_config.labels)
 
         return Pod(
             namespace=namespace,
@@ -233,13 +241,7 @@ class WorkerConfiguration(LoggingMixin):
                                self.kube_config.kube_image_pull_policy),
             cmds=['bash', '-cx', '--'],
             args=[airflow_command],
-            labels={
-                'airflow-worker': worker_uuid,
-                'dag_id': dag_id,
-                'task_id': task_id,
-                'execution_date': execution_date,
-                'function': 'worker'
-            },
+            labels=labels,
             envs=self._get_environment(),
             secrets=self._get_secrets(),
             service_account_name=self.kube_config.worker_service_account_name,
