@@ -113,6 +113,8 @@ class KubeConfig:
         )
         self.delete_worker_pods = conf.getboolean(
             self.kubernetes_section, 'delete_worker_pods')
+        self.delete_failed_worker_pods = conf.getboolean(
+            self.kubernetes_section, 'delete_failed_worker_pods')
 
         self.worker_service_account_name = conf.get(
             self.kubernetes_section, 'worker_service_account_name')
@@ -589,7 +591,8 @@ class KubernetesExecutor(BaseExecutor, LoggingMixin):
 
     def _change_state(self, key, state, pod_id):
         if state != State.RUNNING:
-            self.kube_scheduler.delete_pod(pod_id)
+            if state != State.FAILED or self.kube_config.delete_failed_worker_pods:
+                self.kube_scheduler.delete_pod(pod_id)
             try:
                 self.log.info('Deleted pod: %s', str(key))
                 self.running.pop(key)
