@@ -570,6 +570,7 @@ class SchedulerJob(BaseJob):
 
         self.heartrate = conf.getint('scheduler', 'SCHEDULER_HEARTBEAT_SEC')
         self.max_threads = conf.getint('scheduler', 'max_threads')
+        self.pid_file = os.path.join(conf.get('core', 'airflow_home'), 'scheduler.pid')
 
         if log:
             self._log = log
@@ -1875,6 +1876,8 @@ class SchedulerJob(BaseJob):
 
     @provide_session
     def heartbeat_callback(self, session=None):
+        with open(self.pid_file, 'w') as fh:
+            fh.write('Seen at {}'.format(timezone.utcnow()))
         Stats.gauge('scheduler_heartbeat', 1, 1)
 
 
